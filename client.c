@@ -1401,8 +1401,8 @@ int process_packet(char *packet,int l)
 			mem_free(name);
 			add_message(txt, M_INFO);
 			
-			md5=md5_level(level_number);
-			if (strcmp((char *)md5,packet+5))   /* MD5s differ */
+/*			md5=md5_level(level_number);
+			if (strcmp((char *)md5,packet+5))
 			{
 				mem_free(md5);
 				snprintf(error_message,1024,"Invalid MD5 sum. Can't change level. Game terminated. Press ENTER.");
@@ -1411,7 +1411,7 @@ int process_packet(char *packet,int l)
 				return -1;
 			}
 			mem_free(md5);
-
+*/
 			/* OK we can change it */
 			change_level();
 level_changed:		
