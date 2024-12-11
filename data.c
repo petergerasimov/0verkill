@@ -573,7 +573,7 @@ void update_position(struct it* obj,int new_x,int new_y,int width, int height,un
 		obj->x=sub_int(can_go_x(add_int(obj->x,width-1),add_int(new_x,width-1),double2int(obj->y),round_up(obj->y)+height-1,fx),width-1);
 	else
 		obj->x=can_go_x(obj->x,new_x,double2int(obj->y),round_up(obj->y)+height-1,fx);
-		
+
 	if (obj->yspeed>0)
 		obj->y=sub_int(can_go_y(add_int(obj->y,height-1),add_int(new_y,height-1),double2int(obj->x),round_up(obj->x)+width-1,fy,down_ladder),height-1);
 	else

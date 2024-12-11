@@ -104,7 +104,6 @@ struct queue_list
 struct object_list objects;
 
 struct player_list *last_player;
-struct object_list *last_obj;
 
 
 #ifdef WIN32
@@ -2330,7 +2329,7 @@ br:					offset = 0;
                         p->next->member.y+mul(p->next->member.yspeed,DELTA_TIME),
                         w,h,&stop_x,&stop_y);
 		p->next->member.last_updated=t;
-		
+	
 		/* walk up the stairs */
 		if (stop_x&&p->next->member.type==T_PLAYER&&!(p->next->member.status & S_CREEP))
 		{
@@ -2354,7 +2353,6 @@ br:					offset = 0;
 				stop_x=0;
 			}
 		}
-		
 		if (stop_x)p->next->member.xspeed=-mul(p->next->member.xspeed,obj_attr[p->next->member.type].bounce_x);
 		if (my_abs(p->next->member.xspeed)<MIN_X_SPEED)
 		{
@@ -2429,6 +2427,7 @@ dc:
 				}
 			break;
 		}
+
 cont_cycle:;
         }
 }
@@ -2831,10 +2830,12 @@ static void move_player(struct player *p)
 	if (p->obj->status & S_DEAD)
 		return;   /* dead player */
 
-	if (p->keyboard_status.status & KBD_DOWN_LADDER)  /* climb down a ladder */
-		p->obj->status |= S_CLIMB_DOWN;
-	else
+	if (p->keyboard_status.status & KBD_DOWN_LADDER)  {/* climb down a ladder */
+		p->obj->status |= S_CLIMB_DOWN | S_FALLING;
+		p->obj->yspeed = SPEED_JUMP;
+	} else {
 		p->obj->status &=~ S_CLIMB_DOWN;
+	}
 
 	if (p->keyboard_status.status & KBD_JUMP)
 		jump_player(p, 0, (p->obj->status & (S_LOOKLEFT | S_LOOKRIGHT)));

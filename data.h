@@ -139,7 +139,7 @@
 
 #define ARMS 8
 
-unsigned char *weapon_name[ARMS];
+extern unsigned char *weapon_name[ARMS];
 
 /* STATUS
 0: walk
@@ -168,8 +168,9 @@ struct obj_attr_type
 		      bit 1=server updates
 		      bit 2=server sends updates to clients
 		      */
-}obj_attr[N_TYPES];
+};
 
+extern struct obj_attr_type obj_attr[N_TYPES];
 
 /* weapon attribut table */
 struct weapon_type
@@ -184,8 +185,9 @@ struct weapon_type
 	unsigned char add_ammo;
 	unsigned char max_ammo;
 	int shell_xspeed,shell_yspeed;
-}weapon[ARMS];
+};
 
+extern struct weapon_type weapon[ARMS];
 
 /* object in the game */
 struct it
@@ -211,9 +213,7 @@ struct object_list
         struct it member;
 };
 
-
 extern struct object_list *last_obj;
-
 extern struct sprite *sprites;
 extern char **sprite_names;
 extern int n_sprites;

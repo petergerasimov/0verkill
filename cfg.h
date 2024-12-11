@@ -103,7 +103,7 @@
 
 #define MESSAGE_TTL 10000000  /* in microseconds */
 #define MESSAGE_COLOR 11  /* yellow */
-#define N_MESSAGES 4 /* maximal number of messages */
+#define N_MESSAGES 8 /* maximal number of messages */
 #define MAX_MESSAGE_LENGTH 70  /* maximal length of chat message */
 #define MAX_PACKET_LENGTH 296-12  /* maximal packet length */
 

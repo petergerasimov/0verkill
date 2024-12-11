@@ -26,9 +26,7 @@ int x=0,y=0;  /* cursor coordinates on the screen */
 int oldx=0,oldy=0;  /* old cursor position */
 
 struct object_list objects;
-struct object_list *last_obj;
 int level_number;
-
 
 void catch_signal(int sig_num)
 {
