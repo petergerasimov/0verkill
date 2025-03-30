@@ -52,6 +52,7 @@ if test "$cf_result" = no; then
 fi
 
 AH_TEMPLATE([HAVE_LIBX11], [Define if you have the X11 library (-lX11).])
+AH_TEMPLATE([HAVE_LIBSDL2], [Define if you have the SDL2 library (-lSDL2).])
 AH_TEMPLATE([HAVE_LIBXPM], [Define if you have the Xpm library (-lXpm).])
 AH_TEMPLATE([HAVE_TYPEOF], [Define if you have the typeof function.])
 
@@ -102,6 +103,21 @@ if test "$with_x" = yes ; then
 	AC_SUBST(X0VERKILL)
 	AC_SUBST(XEDITOR)
 	AC_SUBST(XAVI)
+fi
+
+AC_ARG_WITH([sdl],
+    [AS_HELP_STRING([--with-sdl], [Enable SDL support (default: no)])],
+    [with_sdl="$withval"], [with_sdl=no])
+
+if test "$with_sdl" = yes ; then
+    SDL2_LIBS="-lSDL2main -lSDL2 -lSDL2_ttf"
+    SDL0VERKILL=sdl0verkill
+    SDLEDITOR=sdleditor
+    SDLAVI=sdlavi
+    AC_SUBST(SDL2_LIBS)
+    AC_SUBST(SDL0VERKILL)
+    AC_SUBST(SDLEDITOR)
+    AC_SUBST(SDLAVI)
 fi
 
 if test "$ac_cv_have_emx" = yes; then
