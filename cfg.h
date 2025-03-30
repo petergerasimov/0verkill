@@ -19,7 +19,7 @@
 
 /* all TTLs are in microseconds */
 
-#define DEFAULT_FONT_NAME "-misc-fixed-bold-r-normal-*-13-*-*-*-c-*-iso8859-*"
+#define DEFAULT_FONT_NAME "SpaceMono-Regular.ttf"
 
 #define LEVEL_FILE "level.dat"
 #define GAME_SPRITES_FILE "sprites.dat"
@@ -157,6 +157,7 @@ extern int tri_d;
 	#define BASE_DIR	"."
 	#define DATA_PATH "data\\"
 #else
+	#define BASE_DIR	"."
 	#ifndef DATA_PATH
 	#define DATA_PATH "data/"
 	#endif

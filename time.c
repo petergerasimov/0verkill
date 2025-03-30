@@ -8,6 +8,9 @@
 #else
 	#include <time.h>
 #endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include <string.h>
 
 #ifdef HAVE_SYS_SELECT_H
@@ -43,6 +46,8 @@ void sleep_until(unsigned long_long t)
 	Sleep((DWORD)(t/1000));
 #elif defined(__EMX__)
 	_sleep2(t/1000);
+#elif defined(__EMSCRIPTEN__)
+	emscripten_sleep(t/1000);
 #else
 	{
 		struct timeval tv;
