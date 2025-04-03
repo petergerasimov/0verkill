@@ -74,7 +74,7 @@ static const unsigned long crc_table[256] = {
 #define DO8(buf)  DO4(buf); DO4(buf);
 
 /* ========================================================================= */
-unsigned long crc32(unsigned char* buf, unsigned len)
+unsigned long zcrc32(unsigned char* buf, unsigned len)
 {
     unsigned long crc = 0xffffffffL;
     while (len >= 8)

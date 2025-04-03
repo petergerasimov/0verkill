@@ -32,7 +32,7 @@ unsigned char *p;
 int alloc_len = 0;
 void send_packet(char *packet,int len,const struct sockaddr* addr,int sender,int recipient)
 {
-	unsigned long crc=crc32((unsigned char *)packet,len);
+	unsigned long crc=zcrc32((unsigned char *)packet,len);
 	if (!p) p=mem_alloc(len+12);
 	else if (len > alloc_len) {
 	    p=mem_realloc(p,len+12);
@@ -101,7 +101,7 @@ client has: sender_server 1, recipient my_id
 	if (sender)*sender=s;
 	r=p[8]+(p[9]<<8)+(p[10]<<16)+(p[11]<<24);
 	if (retval==-1)return -1;
-	if (crc!=crc32((unsigned char *)packet,retval-12))return -1;
+	if (crc!=zcrc32((unsigned char *)packet,retval-12))return -1;
 	if (r!=recipient)return -1;
 	if (sender_server&&s)return -1;
 	return retval-12;
