@@ -55,6 +55,9 @@
 #endif
 
 #include <string.h>
+#ifdef __EMSCRIPTEN__
+#include <arpa/inet.h>
+#endif
 
 #include "blit.h"
 #include "sprite.h"
@@ -230,7 +233,11 @@ int read_cfg_entry(FILE *stream, char *retval, int len)
 
 int load_default_cfg(struct config *cfg, char state)
 {
+	#ifndef __EMSCRIPTEN__
 	char *host = "localhost";
+	#else
+	char *host = "127.0.0.1";
+	#endif
 	char *name = "Player";
 	/* we dont want to loose argc and argv here ... */
 	memcpy(cfg->host, host, strlen(host));
@@ -452,15 +459,19 @@ void shut_down(int x)
 /* find address of server and fill the server address structure */
 char * find_server(struct config *cfg)
 {
+	#ifndef __EMSCRIPTEN__
 	struct hostent *h;
 
 	h=gethostbyname(cfg->host);
 	if (!h)
 		return "Error: Can't resolve server address.";
+	server.sin_addr=*((struct in_addr*)(h->h_addr_list[0]));
+	#else
+	server.sin_addr.s_addr=inet_addr(cfg->host);
+	#endif
 
 	server.sin_family=AF_INET;
 	server.sin_port=htons(cfg->port);
-	server.sin_addr=*((struct in_addr*)(h->h_addr_list[0]));
 	return 0;
 }
 

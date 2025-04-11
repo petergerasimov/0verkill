@@ -16,4 +16,11 @@ emcc $SRC_FILES \
     -o $OUTPUT \
     --preload-file data \
     --preload-file grx \
-    --preload-file SpaceMono-Regular.ttf
+    --preload-file SpaceMono-Regular.ttf \
+    -sWEBSOCKET_URL="ws://127.0.0.1:8002" \
+    -sWEBSOCKET_SUBPROTOCOL="binary" \
+    -sERROR_ON_UNDEFINED_SYMBOLS=0 \
+    -lwebsocket.js \
+    -sPROXY_POSIX_SOCKETS \
+#   -sPROXY_TO_PTHREAD \
+#   -sOFFSCREEN_FRAMEBUFFER \
