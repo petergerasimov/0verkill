@@ -33,8 +33,10 @@ int alloc_len = 0;
 void send_packet(char *packet,int len,const struct sockaddr* addr,int sender,int recipient)
 {
 	unsigned long crc=zcrc32((unsigned char *)packet,len);
-	if (!p) p=mem_alloc(len+12);
-	else if (len > alloc_len) {
+	if (!p) {
+	    p=mem_alloc(len+12);
+	    alloc_len = len;
+	} else if (len > alloc_len) {
 	    p=mem_realloc(p,len+12);
 	    alloc_len = len;
 	}
@@ -83,16 +85,17 @@ client has: sender_server 1, recipient my_id
 	int retval;
 	unsigned int crc;
 	int s,r;
-	
-	if (!p) p=mem_alloc(max_len+12);
-	else if (max_len > alloc_len) {
+
+	if (!p) {
+	    p=mem_alloc(max_len+12);
+	    alloc_len = max_len;
+	} else if (max_len > alloc_len) {
 	    p=mem_realloc(p,max_len+12);
 	    alloc_len = max_len;
 	}
 	if (!p)return -1;  /* not enough memory */
 	retval=recvfrom(fd,p,max_len+12,0,addr,(unsigned int *)addr_len);
 	if (retval<12) {
-		mem_free(p);
 		return -1;
 	}
 	memcpy(packet,p+12,max_len);
@@ -100,7 +103,6 @@ client has: sender_server 1, recipient my_id
 	s=p[4]+(p[5]<<8)+(p[6]<<16)+(p[7]<<24);
 	if (sender)*sender=s;
 	r=p[8]+(p[9]<<8)+(p[10]<<16)+(p[11]<<24);
-	if (retval==-1)return -1;
 	if (crc!=zcrc32((unsigned char *)packet,retval-12))return -1;
 	if (r!=recipient)return -1;
 	if (sender_server&&s)return -1;

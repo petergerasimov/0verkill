@@ -58,6 +58,7 @@
 #ifdef __EMSCRIPTEN__
 #include <arpa/inet.h>
 #include <emscripten.h>
+#include <fcntl.h>
 #endif
 
 #include "blit.h"
@@ -546,18 +547,21 @@ int contact_server(struct config *cfg)
 	send_packet(packet,l+5,(struct sockaddr*)(&server),my_id,0);
 
 #ifdef __EMSCRIPTEN__
-	/* Browsers can't truly block on a WebSocket the way a UDP socket
-	 * blocks on select(); poll instead and hand control back to the JS
-	 * event loop via emscripten_sleep so the relay's reply can land. */
+	/* Emscripten's libsockfs.js poll() returns POLLIN unconditionally
+	 * for unconnected UDP sockets, so select() can't tell us when data
+	 * has arrived. Instead, yield to JS via emscripten_sleep and try a
+	 * non-blocking recv_packet directly; retry on EAGAIN until either
+	 * a packet lands or we hit the 4 s timeout. */
 	{
 		int waited_ms=0;
 		int got=0;
+		fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 		while (waited_ms<4000) {
-			struct timeval ztv={0,0};
-			FD_ZERO(&fds); FD_SET(fd,&fds);
-			if (select(fd+1,&fds,NULL,NULL,&ztv)>0) { got=1; break; }
 			emscripten_sleep(50);
 			waited_ms+=50;
+			r=recv_packet(packet,256,0,0,1,0,0);
+			if (r>=0) { got=1; break; }
+			if (errno!=EAGAIN && errno!=EWOULDBLOCK) break;
 		}
 		if (!got) {
 			server_error("No reply within 4 seconds. Press ENTER.", E_CONN);
@@ -569,7 +573,6 @@ int contact_server(struct config *cfg)
 		server_error("No reply within 4 seconds. Press ENTER.", E_CONN);
         	return 1;
         }
-#endif
 
 	if ((r=recv_packet(packet,256,0,0,1,0,0))<0)
 	{
@@ -581,6 +584,7 @@ int contact_server(struct config *cfg)
 			return 1;
 		}
 	}
+#endif
 
 	switch(*packet)
 	{

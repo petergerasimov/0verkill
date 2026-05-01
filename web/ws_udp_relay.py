@@ -81,7 +81,12 @@ async def main():
         f"ws://0.0.0.0:{port}/  ->  udp://{host}:{udp_port}",
         flush=True,
     )
-    async with websockets.serve(make_handler(host, udp_port), "0.0.0.0", port):
+    async with websockets.serve(
+        make_handler(host, udp_port),
+        "0.0.0.0",
+        port,
+        subprotocols=["binary"],
+    ):
         await asyncio.Future()
 
 
