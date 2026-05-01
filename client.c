@@ -57,6 +57,7 @@
 #include <string.h>
 #ifdef __EMSCRIPTEN__
 #include <arpa/inet.h>
+#include <emscripten.h>
 #endif
 
 #include "blit.h"
@@ -544,10 +545,31 @@ int contact_server(struct config *cfg)
 
 	send_packet(packet,l+5,(struct sockaddr*)(&server),my_id,0);
 
+#ifdef __EMSCRIPTEN__
+	/* Browsers can't truly block on a WebSocket the way a UDP socket
+	 * blocks on select(); poll instead and hand control back to the JS
+	 * event loop via emscripten_sleep so the relay's reply can land. */
+	{
+		int waited_ms=0;
+		int got=0;
+		while (waited_ms<4000) {
+			struct timeval ztv={0,0};
+			FD_ZERO(&fds); FD_SET(fd,&fds);
+			if (select(fd+1,&fds,NULL,NULL,&ztv)>0) { got=1; break; }
+			emscripten_sleep(50);
+			waited_ms+=50;
+		}
+		if (!got) {
+			server_error("No reply within 4 seconds. Press ENTER.", E_CONN);
+			return 1;
+		}
+	}
+#else
 	if (!select(fd+1,&fds,NULL,NULL,&tv)) {
 		server_error("No reply within 4 seconds. Press ENTER.", E_CONN);
         	return 1;
         }
+#endif
 
 	if ((r=recv_packet(packet,256,0,0,1,0,0))<0)
 	{

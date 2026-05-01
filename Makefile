@@ -16,6 +16,11 @@
 #
 #   make web         build for the browser via emscripten
 #   make serve-web   run a local server for web/ with COOP/COEP headers
+#   make web-proxy   build emscripten's WebSocket->UDP bridge so the
+#                    browser build can reach a native ./server. Auto-
+#                    detects $EMSDK or distro-packaged emscripten under
+#                    /usr/share/emscripten. Override with WS_PROXY_DIR=...
+#                    Run as: ./websocket_to_posix_proxy 8002
 #   make clean       remove all build artifacts
 
 CC      ?= cc
@@ -56,7 +61,7 @@ SDL_SRC     = sdlinterface.c sdlkbd.c
 WEB_OUT = web/index.html
 
 .PHONY: all default sdl terminal x11 server editor bot avi test_server \
-        xeditor xavi sdlavi web serve-web clean
+        xeditor xavi sdlavi web serve-web web-proxy clean
 
 default: 0verkill server
 
@@ -119,7 +124,6 @@ $(WEB_OUT): $(CLIENT_SRC) $(SDL_SRC)
 		-sUSE_SDL=2 -sUSE_SDL_TTF=2 \
 		-sASYNCIFY \
 		-O3 \
-		-pthread \
 		-o $@ \
 		--preload-file data \
 		--preload-file grx \
@@ -127,16 +131,50 @@ $(WEB_OUT): $(CLIENT_SRC) $(SDL_SRC)
 		-sWEBSOCKET_URL="ws://127.0.0.1:8002" \
 		-sWEBSOCKET_SUBPROTOCOL="binary" \
 		-sERROR_ON_UNDEFINED_SYMBOLS=0 \
-		-lwebsocket.js \
-		-sPROXY_POSIX_SOCKETS
+		-lwebsocket.js
 
 WEB_PORT ?= 8000
 serve-web:
 	@python3 web/serve.py $(WEB_PORT)
 
+# WebSocket -> UDP bridge from emscripten's source tree. Lets the
+# emscripten build (which speaks WS on port 8002 by default) talk to a
+# native ./server listening on UDP.
+#
+# Auto-detect: emsdk layout ($EMSDK/upstream/emscripten/...) first,
+# then distro layout (/usr/share/emscripten/...). Override either piece
+# with WS_PROXY_DIR=... on the command line.
+ifeq ($(strip $(WS_PROXY_DIR)),)
+ifneq ($(strip $(EMSDK)),)
+WS_PROXY_DIR := $(EMSDK)/upstream/emscripten/tools/websocket_to_posix_proxy
+else ifneq ($(wildcard /usr/share/emscripten/tools/websocket_to_posix_proxy),)
+WS_PROXY_DIR := /usr/share/emscripten/tools/websocket_to_posix_proxy
+endif
+endif
+
+# Sources may sit at the top of WS_PROXY_DIR (older layouts) or in src/
+# (current upstream and Debian/Ubuntu packaging).
+WS_PROXY_CPP := $(wildcard $(WS_PROXY_DIR)/src/*.cpp $(WS_PROXY_DIR)/*.cpp)
+WS_PROXY_C   := $(wildcard $(WS_PROXY_DIR)/src/*.c   $(WS_PROXY_DIR)/*.c)
+
+web-proxy: websocket_to_posix_proxy
+websocket_to_posix_proxy:
+	@if [ -z "$(WS_PROXY_DIR)" ]; then \
+		echo >&2 "Could not locate emscripten's websocket_to_posix_proxy."; \
+		echo >&2 "Set EMSDK (source emsdk_env.sh) or pass WS_PROXY_DIR=..."; \
+		exit 1; \
+	fi
+	@if [ -z "$(strip $(WS_PROXY_CPP))$(strip $(WS_PROXY_C))" ]; then \
+		echo >&2 "No .cpp/.c sources under $(WS_PROXY_DIR) (or its src/)."; \
+		echo >&2 "Override WS_PROXY_DIR=... to point at the right tree."; \
+		exit 1; \
+	fi
+	$(CXX) -O2 -pthread -x c++ $(WS_PROXY_CPP) -x c $(WS_PROXY_C) -o $@
+
 clean:
 	rm -f 0verkill 0verkill-tty 0verkill-x11 \
 	      server editor xeditor bot \
 	      avi xavi sdlavi test_server \
+	      websocket_to_posix_proxy \
 	      *.o core
 	rm -f web/index.html web/index.js web/index.wasm web/index.data
