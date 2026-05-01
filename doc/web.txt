@@ -1,0 +1,54 @@
+Hosting web players
+===================
+
+The emscripten build (`make web`) produces a browser client that speaks
+to the game server over UDP, but UDP is tunneled through a WebSocket
+because browsers cannot speak UDP directly. The pieces:
+
+    browser  --(WebSocket)-->  ws_udp_relay.py  --(UDP)-->  ./server
+
+You need three processes running on the host:
+
+    1. ./server                            (the game server, UDP, port 6666)
+    2. python3 web/ws_udp_relay.py         (WS<->UDP relay on :8002)
+    3. python3 web/serve.py 8000           (serves web/index.html)
+
+Then point a browser at http://127.0.0.1:8000/ and connect to
+127.0.0.1:8002 from the in-game menu (the menu address is the relay's
+address, not the game server's — the relay knows where the server is).
+
+The relay needs the `websockets` Python package:
+
+    pip install websockets
+
+By default the relay forwards to udp://127.0.0.1:6666. Override:
+
+    python3 web/ws_udp_relay.py 8002 192.0.2.10 6666
+                                ^^^^ ^^^^^^^^^^ ^^^^
+                                |    |          |
+                                |    |          UDP target port
+                                |    UDP target host
+                                WS listen port
+
+
+Hosting on a public address
+---------------------------
+
+Two things change when you stop using localhost:
+
+    1. Browsers reject ws:// from https:// pages. You need wss://, which
+       means terminating TLS in front of the relay. A minimal nginx
+       location works:
+
+           location /ws {
+                   proxy_pass         http://127.0.0.1:8002;
+                   proxy_http_version 1.1;
+                   proxy_set_header   Upgrade $http_upgrade;
+                   proxy_set_header   Connection "upgrade";
+           }
+
+    2. The WS URL is baked into the wasm at build time. The Makefile
+       currently passes -sWEBSOCKET_URL="ws://127.0.0.1:8002". Rebuild
+       with the deployed URL, e.g.:
+
+           emcc ... -sWEBSOCKET_URL=\"wss://example.com/ws\" ...
