@@ -123,6 +123,8 @@ $(WEB_OUT): $(CLIENT_SRC) $(SDL_SRC)
 		-DSDL -DHAVE_LIBSDL2 \
 		-sUSE_SDL=2 -sUSE_SDL_TTF=2 \
 		-sASYNCIFY \
+		-sASYNCIFY_STACK_SIZE=65536 \
+		-sALLOW_MEMORY_GROWTH=1 \
 		-O3 \
 		-o $@ \
 		--preload-file data \
