@@ -1,24 +1,25 @@
-configure
-config.h.in
-config.status
-
-Makefile
-config.log
-config.h
-autom4te.cache
-
+# Build artifacts
 *.o
+core
 
+# Executables
 0verkill
-avi
-bot
-editor
+0verkill-tty
+0verkill-x11
 server
-test_server
-x0verkill
-xavi
+editor
 xeditor
-sdl0verkill
+bot
+avi
+xavi
 sdlavi
+test_server
 
+# Web build output
+web/index.html
+web/index.js
+web/index.wasm
+web/index.data
+
+# Editor swap files
 .*.swp
