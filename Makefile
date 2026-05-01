@@ -15,6 +15,7 @@
 #   make sdlavi      SDL animation player
 #
 #   make web         build for the browser via emscripten
+#   make serve-web   run a local server for web/ with COOP/COEP headers
 #   make clean       remove all build artifacts
 
 CC      ?= cc
@@ -55,7 +56,7 @@ SDL_SRC     = sdlinterface.c sdlkbd.c
 WEB_OUT = web/index.html
 
 .PHONY: all default sdl terminal x11 server editor bot avi test_server \
-        xeditor xavi sdlavi web clean
+        xeditor xavi sdlavi web serve-web clean
 
 default: 0verkill server
 
@@ -128,6 +129,10 @@ $(WEB_OUT): $(CLIENT_SRC) $(SDL_SRC)
 		-sERROR_ON_UNDEFINED_SYMBOLS=0 \
 		-lwebsocket.js \
 		-sPROXY_POSIX_SOCKETS
+
+WEB_PORT ?= 8000
+serve-web:
+	@python3 web/serve.py $(WEB_PORT)
 
 clean:
 	rm -f 0verkill 0verkill-tty 0verkill-x11 \
