@@ -18,12 +18,6 @@ git tag -a -m "Released version $version." "v$version"
 WORKDIR=`mktemp -d `
 echo "Checking out to $WORKDIR"
 git archive --format=tar --prefix=$name-$version/ "v$version" | tar -x -C "$WORKDIR"
-echo "Running autotools"
-SRCDIR=`pwd`
-cd "$WORKDIR/$name-$version"
-autoreconf
-rm -rf autom4te.cache
-cd "$SRCDIR"
 echo "Packing as $name-$version.tar.bz2"
 tar -cjf "$name-$version.tar.bz2" -C "$WORKDIR" "$name-$version/"
 echo "Cleaning $WORKDIR"
