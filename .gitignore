@@ -16,7 +16,6 @@ sdlavi
 test_server
 
 # Web build output
-web/index.html
 web/index.js
 web/index.wasm
 web/index.data

@@ -58,7 +58,10 @@ CONSOLE_SRC = console.c kbd.c
 X_SRC       = xinterface.c xkbd.c
 SDL_SRC     = sdlinterface.c sdlkbd.c
 
-WEB_OUT = web/index.html
+# Emscripten emits index.js + index.wasm + index.data here. The actual
+# page (web/index.html) is checked in and loads index.js directly, so
+# we don't let emcc generate its own HTML shell on top of it.
+WEB_OUT = web/index.js
 
 .PHONY: all default sdl terminal x11 server editor bot avi test_server \
         xeditor xavi sdlavi web serve-web web-proxy clean
@@ -179,4 +182,4 @@ clean:
 	      avi xavi sdlavi test_server \
 	      websocket_to_posix_proxy \
 	      *.o core
-	rm -f web/index.html web/index.js web/index.wasm web/index.data
+	rm -f web/index.js web/index.wasm web/index.data
